@@ -23,7 +23,7 @@
    .venv/Scripts/python -m ipykernel install --user --name tfm_env --display-name tfm_env
    ```
    En Linux o macOS la ruta es `.venv/bin/python`. Desde VS Code o Jupyter, el kernel que hay que elegir es `tfm_env`.
-3. **Datos de partida.** Los microdatos de PISA no se entregan, porque pesan más de 10 GB. Hay que descargarlos de la OCDE y guardarlos en `data/raw/` (siguiente sección). Tampoco se entrega `escs_trend.csv`, por su tamaño: se descarga de <https://webfs.oecd.org/pisa2022/escs_trend.zip>, se descomprime y el `escs_trend.csv` que contiene se guarda en la raíz de `data/raw/` (`data/raw/escs_trend.csv`).
+3. **Datos de partida.** Los microdatos de PISA no se entregan, porque pesan más de 10 GB. Hay que descargarlos de la OCDE y guardarlos en `data/raw/` (siguiente sección). Tampoco se entrega `escs_trend.csv`, por su tamaño: se descarga de [escs_trend.zip](https://webfs.oecd.org/pisa2022/escs_trend.zip), se descomprime y el `escs_trend.csv` se guarda en `data/raw/` (apartado «ESCS reescalado» de la siguiente sección).
 4. **Ejecutar los notebooks en orden** (sección «Orden de los notebooks»). Cada uno lee las tablas que guardan los anteriores.
 
 ---
@@ -60,9 +60,22 @@ El pipeline busca en cada carpeta el único `.sas7bdat` o `.sav` cuyo nombre con
 * si están los originales, genera el `.sav` y después los borra;
 * si faltan, lanza un aviso con los que hay que descargar.
 
-Además de los microdatos, solo hay que descargar `escs_trend.csv`. El resto ya se entrega o lo generan los notebooks:
+**ESCS reescalado (`escs_trend.csv`).** Son los índices socioeconómicos de todas las ediciones reescalados por la OCDE en una escala común, para poder compararlos entre años. No se entrega por su tamaño (77 MB). Se descarga directamente, sin formulario:
 
-* **`escs_trend.csv`** (índices socioeconómicos reescalados por la OCDE para comparar ediciones) no se entrega por su tamaño. Se descarga de <https://webfs.oecd.org/pisa2022/escs_trend.zip>, se descomprime y el `escs_trend.csv` se deja en la raíz de `data/raw/`, sin cambiarle el nombre. Lo leen `00_pipeline_multiedicion_PISA`, `01_EDA_equidad` y `01_EDA_indice_recursos_alumno`.
+* [ESCS reescalado, PISA 2012-2022 (`escs_trend.zip`)](https://webfs.oecd.org/pisa2022/escs_trend.zip)
+
+1. Descargar `escs_trend.zip` desde el enlace.
+2. Descomprimirlo. Dentro hay dos ficheros: `escs_trend.csv` y `ReadMe.txt`.
+3. Guardar `escs_trend.csv` en la raíz de `data/raw/`, sin cambiarle el nombre. El `ReadMe.txt` no hace falta.
+
+| Fichero | Carpeta |
+|---|---|
+| `escs_trend.csv` | `data/raw/` (queda `data/raw/escs_trend.csv`) |
+
+Lo leen `00_pipeline_multiedicion_PISA`, `01_EDA_equidad` y `01_EDA_indice_recursos_alumno`.
+
+Además de los microdatos y de `escs_trend.csv`, no hay que descargar nada más. El resto ya se entrega o lo generan los notebooks:
+
 * **Ficheros que ya se entregan** en la raíz de `data/raw/`: `pisa_mathematics_2000_2022.csv`, `pisa_reading_2000_2022.csv` y `pisa_science_2000_2022.csv` (medias por país publicadas por la OCDE).
 * **`data/raw/datos_anuales/`** (las tablas maestras) la genera el primer notebook, `00_pipeline_multiedicion_PISA`.
 * **`data/raw/externos/`** (Gini, gasto educativo y datos macroeconómicos) la descarga sola `01_EDA_equidad`, desde las APIs públicas de la OCDE, el Banco Mundial y Eurostat (`src/datos_externos.py`).

@@ -7,6 +7,10 @@
 * **Perfiles de centro**: 18 combinaciones fijas de titularidad, ubicación y tamaño.
 * **Modelos**: regresión lineal por edición con efecto fijo de país, ponderada con `SENWT`, con errores agrupados por centro y los valores plausibles combinados con las reglas de Rubin. XGBoost con SHAP sirve de contraste.
 
+> **El agente se entrega por separado.** El agente conversacional que responde preguntas sobre los resultados (`agente_pisa/`) se ha separado de este proyecto y va en un fichero aparte, para no superar el tamaño máximo de la entrega. Se alimenta de los resultados de este proyecto (`data/processed/` y `models/`).
+>
+> Por el mismo motivo tampoco se entregan la tabla del modelo (`data/processed/tabla_modelo_alumno.parquet`), el fichero `data/raw/escs_trend.csv` ni las figuras de `reports/`. `escs_trend.csv` se descarga de la OCDE (ver «Datos de partida»). La tabla y las figuras se generan al ejecutar los notebooks, y la mayoría de las figuras se ven en las salidas de los notebooks, que se entregan ya ejecutados.
+
 ---
 
 ## Puesta en marcha
@@ -19,7 +23,7 @@
    .venv/Scripts/python -m ipykernel install --user --name tfm_env --display-name tfm_env
    ```
    En Linux o macOS la ruta es `.venv/bin/python`. Desde VS Code o Jupyter, el kernel que hay que elegir es `tfm_env`.
-3. **Datos de partida.** Los microdatos de PISA no se entregan, porque pesan más de 10 GB. Hay que descargarlos de la OCDE y guardarlos en `data/raw/` (siguiente sección).
+3. **Datos de partida.** Los microdatos de PISA no se entregan, porque pesan más de 10 GB. Hay que descargarlos de la OCDE y guardarlos en `data/raw/` (siguiente sección). Tampoco se entrega `escs_trend.csv`, por su tamaño: se descarga de <https://webfs.oecd.org/pisa2022/escs_trend.zip>, se descomprime y el `escs_trend.csv` que contiene se guarda en la raíz de `data/raw/` (`data/raw/escs_trend.csv`).
 4. **Ejecutar los notebooks en orden** (sección «Orden de los notebooks»). Cada uno lee las tablas que guardan los anteriores.
 
 ---
@@ -56,13 +60,19 @@ El pipeline busca en cada carpeta el único `.sas7bdat` o `.sav` cuyo nombre con
 * si están los originales, genera el `.sav` y después los borra;
 * si faltan, lanza un aviso con los que hay que descargar.
 
-No hace falta descargar nada más:
+Además de los microdatos, solo hay que descargar `escs_trend.csv`. El resto ya se entrega o lo generan los notebooks:
 
-* **Ficheros que ya se entregan** en la raíz de `data/raw/`: `escs_trend.csv` (índices socioeconómicos reescalados por la OCDE para comparar ediciones) y `pisa_mathematics_2000_2022.csv`, `pisa_reading_2000_2022.csv` y `pisa_science_2000_2022.csv` (medias por país publicadas por la OCDE).
+* **`escs_trend.csv`** (índices socioeconómicos reescalados por la OCDE para comparar ediciones) no se entrega por su tamaño. Se descarga de <https://webfs.oecd.org/pisa2022/escs_trend.zip>, se descomprime y el `escs_trend.csv` se deja en la raíz de `data/raw/`, sin cambiarle el nombre. Lo leen `00_pipeline_multiedicion_PISA`, `01_EDA_equidad` y `01_EDA_indice_recursos_alumno`.
+* **Ficheros que ya se entregan** en la raíz de `data/raw/`: `pisa_mathematics_2000_2022.csv`, `pisa_reading_2000_2022.csv` y `pisa_science_2000_2022.csv` (medias por país publicadas por la OCDE).
 * **`data/raw/datos_anuales/`** (las tablas maestras) la genera el primer notebook, `00_pipeline_multiedicion_PISA`.
 * **`data/raw/externos/`** (Gini, gasto educativo y datos macroeconómicos) la descarga sola `01_EDA_equidad`, desde las APIs públicas de la OCDE, el Banco Mundial y Eurostat (`src/datos_externos.py`).
 
-**Qué se puede ejecutar sin los microdatos.** Las tablas intermedias (`data/intermediate/`), la tabla del modelo (`data/processed/`) y los resultados (`models/`) sí se entregan. Con ellas se ejecutan `03_regresion_por_edicion` y `03_xgboost_shap`, y funciona el agente. Los notebooks de la fase 1, `02_preparacion_modelo`, `03_errores_brr` y `03_robustez_regresion` leen las tablas maestras de `data/raw/datos_anuales/` y necesitan haber descargado los microdatos.
+**Qué se entrega y qué hace falta para ejecutar.** Se entregan las tablas intermedias (`data/intermediate/`), los resultados de los modelos (`models/`) y, de `data/processed/`, los parámetros de escala, el diccionario y los resultados de robustez. La tabla del modelo (`data/processed/tabla_modelo_alumno.parquet`) no se entrega por su tamaño: la genera `02_preparacion_modelo`. Por eso todos los notebooks necesitan haber descargado los microdatos:
+
+* los de la fase 1, `02_preparacion_modelo`, `03_errores_brr` y `03_robustez_regresion` leen las tablas maestras de `data/raw/datos_anuales/`;
+* `03_regresion_por_edicion` y `03_xgboost_shap` leen la tabla del modelo, así que antes hay que ejecutar `02_preparacion_modelo`.
+
+Los notebooks se entregan ya ejecutados, así que sus resultados se pueden consultar sin volver a ejecutarlos.
 
 ---
 
@@ -97,15 +107,14 @@ tfm_data_science/
 ├── data/
 │   ├── raw/            # Microdatos y ficheros originales (no se entregan; ver «Datos de partida»)
 │   ├── intermediate/   # Tablas intermedias de los EDA (.parquet); ver data/intermediate/README.md
-│   └── processed/      # Tabla del modelo, parámetros de escala, diccionario y resultados de robustez
+│   └── processed/      # Tabla del modelo (no se entrega; la genera 02_preparacion_modelo), parámetros de escala, diccionario y resultados de robustez
 ├── notebooks/
 │   ├── fase_1_data_ingestion_eda/
 │   ├── fase_2_feature_engineering/
 │   └── fase_3_modelado/
 ├── src/                # Funciones comunes que usan los notebooks
-├── models/             # Resultados que lee el agente: coeficientes, SHAP y métricas (ver models/README.md)
-├── reports/            # Figuras que guardan los notebooks
-├── agente_pisa/        # Agente conversacional que responde preguntas sobre los resultados
+├── models/             # Resultados que lee el agente (entregado aparte): coeficientes, SHAP y métricas (ver models/README.md)
+├── reports/            # Figuras que guardan los notebooks (no se entregan; ver reports/README.md)
 └── requirements.txt
 ```
 

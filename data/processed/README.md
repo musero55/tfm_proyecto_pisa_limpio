@@ -1,5 +1,7 @@
 # Datos para los modelos
 
+> `tabla_modelo_alumno.parquet` no se entrega por su tamaño. Se genera al ejecutar `02_preparacion_modelo`, que necesita los microdatos (ver el README de la raíz).
+
 | Fichero | Lo genera | Contenido |
 |---|---|---|
 | `tabla_modelo_alumno.parquet` | `notebooks/fase_2_feature_engineering/02_preparacion_modelo` | Una fila por alumno con perfil de centro de los 12 países del panel común y las cuatro ediciones. Las variables están en sus unidades originales, sin imputar ni codificar. Las marcas `perfil_excluido`, `perfil_poco_representativo`, `con_variables_interes` y `en_modelo` dicen quién entra en el modelo. La leen los notebooks de modelado y el agente |
